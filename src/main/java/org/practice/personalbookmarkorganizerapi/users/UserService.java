@@ -1,7 +1,6 @@
 package org.practice.personalbookmarkorganizerapi.users;
 
 import org.practice.personalbookmarkorganizerapi.users.dto.CreateProfileRequest;
-import org.practice.personalbookmarkorganizerapi.users.dto.UpdateProfileRequest;
 import org.practice.personalbookmarkorganizerapi.users.dto.UserResponse;
 import org.practice.personalbookmarkorganizerapi.users.exception.ProfileAlreadyExistsException;
 import org.practice.personalbookmarkorganizerapi.users.exception.UserNotFoundException;
@@ -26,6 +25,12 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException());
 
         return toUserResponse(user);
+    }
+
+    @Transactional(readOnly = true)
+    public User getActiveUserEntityById(UUID userId) {
+        return userRepository.findUserByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new UserNotFoundException());
     }
 
     @Transactional

@@ -2,7 +2,6 @@ package org.practice.personalbookmarkorganizerapi.users;
 
 import jakarta.validation.Valid;
 import org.practice.personalbookmarkorganizerapi.users.dto.CreateProfileRequest;
-import org.practice.personalbookmarkorganizerapi.users.dto.UpdateProfileRequest;
 import org.practice.personalbookmarkorganizerapi.users.dto.UserResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
