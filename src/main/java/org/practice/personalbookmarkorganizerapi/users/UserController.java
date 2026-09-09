@@ -20,7 +20,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @RequestMapping
+    @GetMapping
     public ResponseEntity<UserResponse> getProfile(@AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
 
@@ -39,15 +39,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
     }
 
-    @PatchMapping
-    public ResponseEntity<UserResponse> updateProfile(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody UpdateProfileRequest updateProfileRequest) {
-        UUID userId = UUID.fromString(jwt.getSubject());
-
-        UserResponse userResponse = userService.updateProfile(userId, updateProfileRequest);
-
-        return ResponseEntity.ok(userResponse);
-    }
-
     @DeleteMapping
     public ResponseEntity<Void> deleteProfile(@AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -56,6 +47,4 @@ public class UserController {
 
         return ResponseEntity.noContent().build();
     }
-
-
 }

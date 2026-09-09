@@ -1,6 +1,7 @@
 package org.practice.personalbookmarkorganizerapi.bookmarks;
 
 import org.practice.personalbookmarkorganizerapi.bookmarks.dto.BookmarkResponse;
+import org.practice.personalbookmarkorganizerapi.bookmarks.dto.BookmarkTagResponse;
 import org.practice.personalbookmarkorganizerapi.bookmarks.dto.CreateBookmarkRequest;
 import org.practice.personalbookmarkorganizerapi.bookmarks.dto.UpdateBookmarkRequest;
 import org.practice.personalbookmarkorganizerapi.bookmarks.exception.BookmarkNotFoundException;
@@ -9,11 +10,14 @@ import org.practice.personalbookmarkorganizerapi.bookmarks.exception.InvalidBook
 import org.practice.personalbookmarkorganizerapi.collections.Collection;
 import org.practice.personalbookmarkorganizerapi.collections.CollectionRepository;
 import org.practice.personalbookmarkorganizerapi.collections.CollectionService;
+import org.practice.personalbookmarkorganizerapi.tags.Tag;
+import org.practice.personalbookmarkorganizerapi.tags.TagService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -21,11 +25,13 @@ public class BookmarkService {
     private final CollectionRepository collectionRepository;
     private final BookmarkRepository bookmarkRepository;
     private final CollectionService collectionService;
+    private final TagService tagService;
 
-    public BookmarkService(BookmarkRepository bookmarkRepository, CollectionService collectionService, CollectionRepository collectionRepository) {
+    public BookmarkService(BookmarkRepository bookmarkRepository, CollectionService collectionService, CollectionRepository collectionRepository, TagService tagService) {
         this.bookmarkRepository = bookmarkRepository;
         this.collectionService = collectionService;
         this.collectionRepository = collectionRepository;
+        this.tagService = tagService;
     }
 
     @Transactional(readOnly = true)
@@ -43,7 +49,7 @@ public class BookmarkService {
 
     @Transactional(readOnly = true)
     public BookmarkResponse getBookmarkById(UUID userId, UUID collectionId, UUID bookmarkId) {
-        Bookmark bookmark = bookmarkRepository.findByIdAndCollection_IdAndCollection_User_Id(bookmarkId, collectionId, userId)
+        Bookmark bookmark = bookmarkRepository.findByIdAndCollection_IdAndCollection_User_IdAndCollection_User_DeletedAtIsNull(bookmarkId, collectionId, userId)
                 .orElseThrow(() -> new BookmarkNotFoundException());
 
         return toBookmarkResponse(bookmark);
@@ -67,7 +73,7 @@ public class BookmarkService {
 
     @Transactional
     public BookmarkResponse updateBookmark(UUID userId, UUID collectionId, UUID bookmarkId, UpdateBookmarkRequest updateBookmarkRequest) {
-        Bookmark bookmark = bookmarkRepository.findByIdAndCollection_IdAndCollection_User_Id(bookmarkId, collectionId, userId)
+        Bookmark bookmark = bookmarkRepository.findByIdAndCollection_IdAndCollection_User_IdAndCollection_User_DeletedAtIsNull(bookmarkId, collectionId, userId)
                 .orElseThrow(() -> new BookmarkNotFoundException());
         String url = updateBookmarkRequest.getUrl();
         String title = updateBookmarkRequest.getTitle();
@@ -94,11 +100,11 @@ public class BookmarkService {
             }
         }
 
-        if (!notes.equals(bookmark.getNotes())) {
+        if (notes != null && !notes.equals(bookmark.getNotes())) {
             bookmark.setNotes(notes);
         }
 
-        if (!status.equals(bookmark.getStatus())) {
+        if (status != null && status != bookmark.getStatus()) {
             bookmark.setStatus(status);
         }
 
@@ -107,19 +113,53 @@ public class BookmarkService {
 
     @Transactional
     public void deleteBookmark(UUID userId, UUID collectionId, UUID bookmarkId) {
-        Bookmark bookmark = bookmarkRepository.findByIdAndCollection_IdAndCollection_User_Id(bookmarkId, collectionId, userId)
+        Bookmark bookmark = bookmarkRepository.findByIdAndCollection_IdAndCollection_User_IdAndCollection_User_DeletedAtIsNull(bookmarkId, collectionId, userId)
                 .orElseThrow(() -> new BookmarkNotFoundException());
 
         bookmarkRepository.delete(bookmark);
     }
 
+    @Transactional
+    public BookmarkResponse addTagToBookmark(UUID userId, UUID collectionId, UUID bookmarkId, UUID tagId) {
+        Bookmark bookmark = bookmarkRepository.findByIdAndCollection_IdAndCollection_User_IdAndCollection_User_DeletedAtIsNull(bookmarkId, collectionId, userId)
+                .orElseThrow(() -> new BookmarkNotFoundException());
+        Tag tag = tagService.getTagEntityById(userId, tagId);
+
+        boolean alreadyAttached = bookmark.getBookmarkTags()
+                .stream()
+                .anyMatch(bookmarkTag -> bookmarkTag.getTag().getId().equals(tagId));
+
+        if (!alreadyAttached) {
+            bookmark.addTag(tag);
+        }
+
+        return toBookmarkResponse(bookmark);
+    }
+
+    @Transactional
+    public void removeTagFromBookmark(UUID userId, UUID collectionId, UUID bookmarkId, UUID tagId) {
+        Bookmark bookmark = bookmarkRepository.findByIdAndCollection_IdAndCollection_User_IdAndCollection_User_DeletedAtIsNull(bookmarkId, collectionId, userId)
+                .orElseThrow(() -> new BookmarkNotFoundException());
+
+        bookmark.removeTag(tagId);
+    }
+
     private BookmarkResponse toBookmarkResponse(Bookmark bookmark) {
+        List<BookmarkTagResponse> tags = bookmark.getBookmarkTags()
+                .stream()
+                .map(bookmarkTag -> new BookmarkTagResponse(
+                        bookmarkTag.getTag().getId(),
+                        bookmarkTag.getTag().getName()
+                ))
+                .toList();
+
         return new BookmarkResponse(
                 bookmark.getId(),
                 bookmark.getUrl(),
                 bookmark.getTitle(),
                 bookmark.getNotes(),
                 bookmark.getStatus(),
+                tags,
                 bookmark.getCreatedAt(),
                 bookmark.getUpdatedAt()
         );

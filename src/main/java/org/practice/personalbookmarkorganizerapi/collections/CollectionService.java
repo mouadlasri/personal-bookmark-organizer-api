@@ -27,9 +27,7 @@ public class CollectionService {
 
     @Transactional(readOnly = true)
     public Page<CollectionResponse> getAllCollections(UUID userId, Pageable pageable) {
-        userService.getActiveUserEntityById(userId);
-
-        Page<Collection> collectionPage = collectionRepository.findAllByUser_Id(userId, pageable);
+        Page<Collection> collectionPage = collectionRepository.findAllByUser_IdAndUser_DeletedAtIsNull(userId, pageable);
 
         Page<CollectionResponse> collectionResponsePage = collectionPage.map(collection -> toCollectionResponse(collection));
 
@@ -47,8 +45,6 @@ public class CollectionService {
 
     @Transactional(readOnly = true)
     public Collection getCollectionEntityByIdAndUserId(UUID collectionId, UUID userId) {
-        userService.getActiveUserEntityById(userId);
-
         Collection collection = collectionRepository.findByIdAndUserId(collectionId, userId)
                 .orElseThrow(() -> new CollectionNotFoundException());
 
@@ -76,7 +72,6 @@ public class CollectionService {
 
     @Transactional
     public CollectionResponse updateCollection(UUID userId, UUID collectionId, UpdateCollectionRequest updateCollectionRequest) {
-        userService.getActiveUserEntityById(userId);
         Collection collection = collectionRepository.findByIdAndUserId(collectionId, userId)
                 .orElseThrow(() -> new CollectionNotFoundException());
 
@@ -106,7 +101,6 @@ public class CollectionService {
 
     @Transactional
     public void deleteCollection(UUID userId, UUID collectionId) {
-        userService.getActiveUserEntityById(userId);
         Collection collection = collectionRepository.findByIdAndUserId(collectionId, userId)
                 .orElseThrow(() -> new CollectionNotFoundException());
 

@@ -47,19 +47,6 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse updateProfile(UUID userId, UpdateProfileRequest updateProfileRequest) {
-        String displayName = updateProfileRequest.getDisplayName();
-        User user = userRepository.findUserByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(() -> new UserNotFoundException());
-
-        if (displayName != null && !user.getDisplayName().equals(displayName)) {
-            user.setDisplayName(displayName);
-        }
-
-        return toUserResponse(user);
-    }
-
-    @Transactional
     public void deleteProfile(UUID userId) {
         User user = userRepository.findUserByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new UserNotFoundException());

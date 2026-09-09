@@ -3,6 +3,7 @@ package org.practice.personalbookmarkorganizerapi.bookmarks.dto;
 import org.practice.personalbookmarkorganizerapi.bookmarks.BookmarkStatus;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class BookmarkResponse {
@@ -11,15 +12,17 @@ public class BookmarkResponse {
     private String title;
     private String notes;
     private BookmarkStatus status;
+    private List<BookmarkTagResponse> tags;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 
-    public BookmarkResponse(UUID id, String url, String title, String notes, BookmarkStatus status, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    public BookmarkResponse(UUID id, String url, String title, String notes, BookmarkStatus status, List<BookmarkTagResponse> tags, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         this.id = id;
         this.url = url;
         this.title = title;
         this.notes = notes;
         this.status = status;
+        this.tags = tags;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -42,6 +45,10 @@ public class BookmarkResponse {
 
     public BookmarkStatus getStatus() {
         return status;
+    }
+
+    public List<BookmarkTagResponse> getTags() {
+        return tags;
     }
 
     public OffsetDateTime getCreatedAt() {

@@ -60,7 +60,7 @@ public class BookmarkController {
     }
 
     @PatchMapping("/{bookmarkId}")
-    public ResponseEntity<BookmarkResponse> updateBookmark(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID collectionId, @PathVariable UUID bookmarkId, @PathVariable @RequestBody UpdateBookmarkRequest updateBookmarkRequest) {
+    public ResponseEntity<BookmarkResponse> updateBookmark(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID collectionId, @PathVariable UUID bookmarkId, @Valid @RequestBody UpdateBookmarkRequest updateBookmarkRequest) {
         UUID userId = UUID.fromString(jwt.getSubject());
 
         BookmarkResponse bookmarkResponse = bookmarkService.updateBookmark(userId, collectionId, bookmarkId, updateBookmarkRequest);
@@ -73,6 +73,39 @@ public class BookmarkController {
         UUID userId = UUID.fromString(jwt.getSubject());
 
         bookmarkService.deleteBookmark(userId, collectionId, bookmarkId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{bookmarkId}/tags/{tagId}")
+    public ResponseEntity<BookmarkResponse> addTagToBookmark(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID collectionId,
+            @PathVariable UUID bookmarkId,
+            @PathVariable UUID tagId
+    ) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        BookmarkResponse bookmarkResponse = bookmarkService.addTagToBookmark(
+                userId,
+                collectionId,
+                bookmarkId,
+                tagId
+        );
+
+        return ResponseEntity.ok(bookmarkResponse);
+    }
+
+    @DeleteMapping("/{bookmarkId}/tags/{tagId}")
+    public ResponseEntity<Void> removeTagFromBookmark(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID collectionId,
+            @PathVariable UUID bookmarkId,
+            @PathVariable UUID tagId
+    ) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        bookmarkService.removeTagFromBookmark(userId, collectionId, bookmarkId, tagId);
 
         return ResponseEntity.noContent().build();
     }

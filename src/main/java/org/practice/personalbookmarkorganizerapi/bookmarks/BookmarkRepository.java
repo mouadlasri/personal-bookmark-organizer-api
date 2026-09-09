@@ -10,5 +10,5 @@ import java.util.UUID;
 public interface BookmarkRepository extends JpaRepository<Bookmark, UUID> {
     Page<Bookmark> findAllByCollection_Id(UUID collectionId, Pageable pageable);
 
-    Optional<Bookmark> findByIdAndCollection_IdAndCollection_User_Id(UUID bookmarkId, UUID collectionId, UUID userId);
+    Optional<Bookmark> findByIdAndCollection_IdAndCollection_User_IdAndCollection_User_DeletedAtIsNull(UUID bookmarkId, UUID collectionId, UUID userId);
 }
