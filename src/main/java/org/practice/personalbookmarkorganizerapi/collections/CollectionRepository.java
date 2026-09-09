@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CollectionRepository extends JpaRepository<Collection, UUID> {
-    Page<Collection> findAllByUserId(UUID userId, Pageable pageable);
+    Page<Collection> findAllByUser_Id(UUID userId, Pageable pageable);
 
     @Query("SELECT c FROM Collection c WHERE c.id = :collectionId AND c.user.id = :userId")
     Optional<Collection> findByIdAndUserId(@Param("collectionId") UUID collectionId, @Param("userId") UUID userId);

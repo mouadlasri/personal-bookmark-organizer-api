@@ -29,7 +29,7 @@ public class CollectionService {
     public Page<CollectionResponse> getAllCollections(UUID userId, Pageable pageable) {
         userService.getActiveUserEntityById(userId);
 
-        Page<Collection> collectionPage = collectionRepository.findAllByUserId(userId, pageable);
+        Page<Collection> collectionPage = collectionRepository.findAllByUser_Id(userId, pageable);
 
         Page<CollectionResponse> collectionResponsePage = collectionPage.map(collection -> toCollectionResponse(collection));
 
@@ -43,6 +43,16 @@ public class CollectionService {
                 .orElseThrow(() -> new CollectionNotFoundException());
 
         return toCollectionResponse(collection);
+    }
+
+    @Transactional(readOnly = true)
+    public Collection getCollectionEntityByIdAndUserId(UUID collectionId, UUID userId) {
+        userService.getActiveUserEntityById(userId);
+
+        Collection collection = collectionRepository.findByIdAndUserId(collectionId, userId)
+                .orElseThrow(() -> new CollectionNotFoundException());
+
+        return collection;
     }
 
     @Transactional
