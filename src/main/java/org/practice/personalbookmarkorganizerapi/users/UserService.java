@@ -1,7 +1,9 @@
 package org.practice.personalbookmarkorganizerapi.users;
 
 import org.practice.personalbookmarkorganizerapi.users.dto.CreateProfileRequest;
+import org.practice.personalbookmarkorganizerapi.users.dto.UpdateProfileRequest;
 import org.practice.personalbookmarkorganizerapi.users.dto.UserResponse;
+import org.practice.personalbookmarkorganizerapi.users.exception.InvalidDisplayNameException;
 import org.practice.personalbookmarkorganizerapi.users.exception.ProfileAlreadyExistsException;
 import org.practice.personalbookmarkorganizerapi.users.exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,25 @@ public class UserService {
         User user = new User(userId, createProfileRequest.getDisplayName(), email);
 
         User createdUser = userRepository.save(user);
+
+        return toUserResponse(user);
+    }
+
+    @Transactional
+    public UserResponse updateProfile(UUID userId, UpdateProfileRequest updateProfileRequest) {
+        User user = userRepository.findUserByIdAndDeletedAtIsNull(userId).orElseThrow(() -> new UserNotFoundException());
+
+        String displayName = updateProfileRequest.getDisplayName();
+
+        if (displayName != null) {
+            if (displayName.isBlank()) {
+                throw new InvalidDisplayNameException();
+            }
+
+            if (!displayName.equals(user.getDisplayName())) {
+                user.setDisplayName(displayName);
+            }
+        }
 
         return toUserResponse(user);
     }

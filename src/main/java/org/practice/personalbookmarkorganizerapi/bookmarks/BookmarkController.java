@@ -30,13 +30,14 @@ public class BookmarkController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID collectionId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) BookmarkStatus status
     ) {
         UUID userId = UUID.fromString(jwt.getSubject());
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        Page<BookmarkResponse> bookmarkResponsePage = bookmarkService.getAllBookmarks(userId, collectionId, pageable);
+        Page<BookmarkResponse> bookmarkResponsePage = bookmarkService.getAllBookmarks(userId, collectionId, pageable, status);
 
         return ResponseEntity.ok(bookmarkResponsePage);
     }

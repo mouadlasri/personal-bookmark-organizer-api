@@ -2,6 +2,7 @@ package org.practice.personalbookmarkorganizerapi.users;
 
 import jakarta.validation.Valid;
 import org.practice.personalbookmarkorganizerapi.users.dto.CreateProfileRequest;
+import org.practice.personalbookmarkorganizerapi.users.dto.UpdateProfileRequest;
 import org.practice.personalbookmarkorganizerapi.users.dto.UserResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,15 @@ public class UserController {
         UserResponse userResponse = userService.createProfile(userId, email, createProfileRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
+    }
+
+    @PatchMapping
+    public ResponseEntity<UserResponse> updateProfile(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody UpdateProfileRequest updateProfileRequest) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        UserResponse userResponse = userService.updateProfile(userId, updateProfileRequest);
+
+        return ResponseEntity.ok(userResponse);
     }
 
     @DeleteMapping

@@ -35,16 +35,23 @@ public class BookmarkService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BookmarkResponse> getAllBookmarks(UUID userId, UUID collectionId, Pageable pageable) {
-        // check existing of collection and if collection belongs to this user
+    public Page<BookmarkResponse> getAllBookmarks(UUID userId, UUID collectionId, Pageable pageable, BookmarkStatus status) {
+        // confirm that the collection exists and belongs to this user
         collectionService.getCollectionByIdAndUserId(collectionId, userId);
 
-        // fetch all bookmarks that belong to this collection
-        Page<Bookmark> bookmarkPage = bookmarkRepository.findAllByCollection_Id(collectionId, pageable);
+        // The repository's entity graph loads each bookmark together with its
+        // BookmarkTag links and Tag entities. Accessing the tags while mapping
+        // the responses therefore does not trigger an extra query per bookmark.
+        Page<Bookmark> bookmarkPage;
+        if (status == null) {
+            bookmarkPage = bookmarkRepository.findAllByCollection_Id(collectionId, pageable);
+        } else {
+            bookmarkPage = bookmarkRepository.findAllByCollection_IdAndStatus(collectionId, status, pageable);
+        }
 
-        Page<BookmarkResponse> bookmarkResponsePage = bookmarkPage.map(bookmark -> toBookmarkResponse(bookmark));
-
-        return bookmarkResponsePage;
+        // Page.map keeps the existing page number, size, and total count while
+        // converting each Bookmark entity into the API's BookmarkResponse DTO.
+        return bookmarkPage.map(bookmark -> toBookmarkResponse(bookmark));
     }
 
     @Transactional(readOnly = true)
