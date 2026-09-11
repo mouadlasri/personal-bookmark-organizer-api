@@ -312,25 +312,3 @@ The API returns consistent JSON errors for:
 
 Ownership-scoped lookups return `404` when another user's resource is requested,
 avoiding disclosure that the resource exists.
-
-## Project Status
-
-The Version 1 application and Docker packaging are complete. Cloud deployment
-is intentionally deferred.
-
-Verified locally:
-
-- The multi-stage Docker image builds successfully.
-- The container starts with the Supabase configuration supplied at runtime.
-- Flyway validates the existing database migrations inside the container.
-- The public `/health` endpoint responds successfully through the published
-  Docker port.
-
-Possible future improvements:
-
-- Automated service, authorization, repository, and integration tests
-- Browser extension
-- Link-preview metadata extraction
-- Sharing and collaboration
-- Reminders or analytics
-- AI-assisted classification or summarization
